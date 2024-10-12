@@ -1,3 +1,6 @@
 zephyr/.venv/
 zephyr/build/
 .vscode/
+build/
+output/
+*.pem
