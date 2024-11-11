@@ -1,15 +1,15 @@
 
 compress_app() {
     echo "Compressing the application"
-    du -b build/zephyr/zephyr.elf | cut -f1 > log.txt
+    ls -lh build/zephyr/zephyr.elf | cut -d " " -f5 > run.log
     compress -f build/zephyr/zephyr.elf
-    du -b build/zephyr/zephyr.elf.Z | cut -f1 >> log.txt
+    ls -lh build/zephyr/zephyr.elf.Z | cut -d " " -f5 >> run.log
 }
 
 encrypt_app() {
     echo "Encrypting the application"
     openssl enc -aes-256-cbc -p -pass pass:dakshina -in build/zephyr/zephyr.elf.Z -out output/app.enc
-    du -b output/app.enc | cut -f1 >> log.txt
+    ls -lh output/app.enc | cut -d " " -f5 >> run.log
 }
 
 sign_app() {
@@ -24,7 +24,7 @@ else
     if [ $1 == "b" ]; then
         echo "Building the application"
         cd zephyr
-        west build --pristine -b qemu_cortex_m3 ../applications/mppt/ -d ../build/
+        west build --pristine -b native_sim ../applications/mini_nn/ -d ../build/
         cd ..
         
         compress_app

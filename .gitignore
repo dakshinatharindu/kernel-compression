@@ -4,3 +4,4 @@ zephyr/build/
 build/
 output/
 *.pem
+*.log
