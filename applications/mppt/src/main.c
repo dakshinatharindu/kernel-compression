@@ -14,7 +14,7 @@
 void thread1(void)
 {
 	while (1) {
-		printf("Hello from thread1\n");
+		// printf("Hello from thread1\n");
 		mppt();
 		k_msleep(2000);
 	}
@@ -23,7 +23,7 @@ void thread1(void)
 void thread2(void)
 {
 	while (1) {
-		printf("Hello from thread2\n");
+		// printf("Hello from thread2\n");
 		k_msleep(1000);
 	}
 }

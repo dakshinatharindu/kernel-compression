@@ -1,15 +1,23 @@
 
 compress_app() {
     echo "Compressing the application"
-    ls -lh build/zephyr/zephyr.elf | cut -d " " -f5 > run.log
+    ls -l build/zephyr/zephyr.elf | cut -d " " -f5 > run.log
     compress -f build/zephyr/zephyr.elf
-    ls -lh build/zephyr/zephyr.elf.Z | cut -d " " -f5 >> run.log
+    ls -l build/zephyr/zephyr.elf.Z | cut -d " " -f5 >> run.log
+}
+
+decompress_app() {
+    echo "Decompressing the application"
+    start=$(date +%s.%N)
+    compress -d build/zephyr/zephyr.elf.Z
+    end=$(date +%s.%N)
+    duration=$(echo "$end - $start" | bc)
+    echo $duration >> run.log
 }
 
 encrypt_app() {
     echo "Encrypting the application"
-    openssl enc -aes-256-cbc -p -pass pass:dakshina -in build/zephyr/zephyr.elf.Z -out output/app.enc
-    ls -lh output/app.enc | cut -d " " -f5 >> run.log
+    openssl enc $4 -p -pass pass:dakshina -in build/zephyr/zephyr.elf.Z -out output/app.enc
 }
 
 sign_app() {
@@ -21,19 +29,20 @@ sign_app() {
 if [ -z "$1" ]; then
     echo "No argument supplied"
 else
-    if [ $1 == "b" ]; then
+    if [ "$1" = "b" ]; then
         echo "Building the application"
         cd zephyr
-        west build --pristine -b native_sim ../applications/mini_nn/ -d ../build/
+        west build --pristine -b $2 ../applications/$3 -d ../build/
         cd ..
         
         compress_app
         encrypt_app
         sign_app
-    elif [ $1 == "r" ]; then
+        decompress_app
+    elif [ "$1" = "r" ]; then
         echo "Running the application"
         cd zephyr
-        west build -t run -d ../build/
+        west build -t run  -d ../build/
         cd ..
     else
         echo "Invalid argument"
