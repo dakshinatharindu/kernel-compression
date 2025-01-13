@@ -2,14 +2,17 @@
 compress_app() {
     echo "Compressing the application"
     ls -l build/zephyr/zephyr.elf | cut -d " " -f5 > run.log
-    compress -f build/zephyr/zephyr.elf
-    ls -l build/zephyr/zephyr.elf.Z | cut -d " " -f5 >> run.log
+    # compress -f build/zephyr/zephyr.elf
+    xz build/zephyr/zephyr.elf
+    # ls -l build/zephyr/zephyr.elf.Z | cut -d " " -f5 >> run.log
+    ls -l build/zephyr/zephyr.elf.xz | cut -d " " -f5 >> run.log
 }
 
 decompress_app() {
     echo "Decompressing the application"
     start=$(date +%s.%N)
-    compress -d build/zephyr/zephyr.elf.Z
+    # compress -d build/zephyr/zephyr.elf.Z
+    unxz build/zephyr/zephyr.elf.xz
     end=$(date +%s.%N)
     duration=$(echo "$end - $start" | bc)
     echo $duration >> run.log
@@ -17,7 +20,8 @@ decompress_app() {
 
 encrypt_app() {
     echo "Encrypting the application"
-    openssl enc $4 -p -pass pass:dakshina -in build/zephyr/zephyr.elf.Z -out output/app.enc
+    # openssl enc $4 -p -pass pass:dakshina -in build/zephyr/zephyr.elf.Z -out output/app.enc
+    openssl enc $4 -p -pass pass:dakshina -in build/zephyr/zephyr.elf.xz -out output/app.enc
 }
 
 sign_app() {
