@@ -7,38 +7,49 @@ kernels = [
 
 applications = [
     "bloom_filter",
-
 ]
 
 encryptions = [
-    "-aes-128-cbc",
+    "aes_128",
+    "aes_256",
 ]
 
 compressions = [
-    "lzw"
+    "lzw",
+    "lzma2"
 ]
 
 authentications = [
-    "rsa_3k"
+    "rsa_3k",
+    "rsa_4k",
+    "ecdsa_192",
+    "ecdsa_384"
 ]
 
 command = "bash ./run.sh b "
 
+data_dict = {}
+
 with open('results.csv', 'w', newline='') as csvfile:
     csvwriter = csv.writer(csvfile)
     # Write header
-    csvwriter.writerow(['Kernel', 'Application', 'Authentication', 'Encryption', 'Compression', 'Orig Size', "Comp Size", "Time"])
+    csvwriter.writerow(['Kernel', 'Application', 'Authentication', 'Encryption', 'Compression', 'Orig Size', "Comp Size", \
+                        "Sign Time", "Encrypt Time", "Comp Time", "Verify Time", "Decrypt Time", "Decomp Time"])
 
     for kern in kernels:
         for app in applications:
             for auth in authentications:
                 for enc in encryptions:
                     for cmp in compressions:
-                        os.system(command + kern + " " + app + " " + enc + " " + cmp + " " + auth)
-                        # print(command + kern + " " + app + " " + enc + " " + cmp + " " + auth)
-                        # with open('run.log', 'r') as f:
-                        #     num1 = int(f.readline())
-                        #     num2 = int(f.readline())
-                        #     time = float(f.readline())
+                        print("Running: " + kern + " " + app + " " + enc + " " + cmp + " " + auth)
 
-                        # csvwriter.writerow([kern, app, auth, enc, cmp, num1, num2, time])
+                        os.system(command + kern + " " + app + " " + enc + " " + cmp + " " + auth)
+
+                        with open('run.log', 'r') as f:
+                            for line in f:
+                                s, value = line.strip().split(",")
+                                data_dict[s] = value
+
+                        csvwriter.writerow([kern, app, auth, enc, cmp, data_dict["orig_size"], data_dict["comp_size"], \
+                                            data_dict["sign_time"], data_dict["encrypt_time"], data_dict["comp_time"], \
+                                                data_dict["verify_time"], data_dict["decrypt_time"], data_dict["decompress_time"]])
