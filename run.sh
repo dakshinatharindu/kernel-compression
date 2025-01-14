@@ -49,15 +49,25 @@ encrypt_app() {
     echo "Encrypting the application"
     echo -n "encrypt_time," >> run.log
     case $enc_algo in
-        "aes_128")
+        "aes_128_cbc")
             echo "Encrypting using AES 128"
             openssl rand -out iv.bin 16
             { time (openssl enc -aes-128-cbc -in build/zephyr/zephyr.comp -out output/app.enc -kfile utils/aes128.bin -iv $(xxd -p -c 32 iv.bin) 2>/dev/null); } 2>> run.log
             ;;
-        "aes_256")
+        "aes_256_cbc")
             echo "Encrypting using AES 256"
             openssl rand -out iv.bin 16
             { time (openssl enc -aes-256-cbc -in build/zephyr/zephyr.comp -out output/app.enc -kfile utils/aes256.bin -iv $(xxd -p -c 32 iv.bin) 2>/dev/null); } 2>> run.log
+            ;;
+        "aes_128_ctr")
+            echo "Encrypting using AES 128 CTR"
+            openssl rand -out iv.bin 16
+            { time (openssl enc -aes-128-ctr -in build/zephyr/zephyr.comp -out output/app.enc -kfile utils/aes128.bin -iv $(xxd -p -c 32 iv.bin) 2>/dev/null); } 2>> run.log
+            ;;
+        "aes_256_ctr")
+            echo "Encrypting using AES 256 CTR"
+            openssl rand -out iv.bin 16
+            { time (openssl enc -aes-256-ctr -in build/zephyr/zephyr.comp -out output/app.enc -kfile utils/aes256.bin -iv $(xxd -p -c 32 iv.bin) 2>/dev/null); } 2>> run.log
             ;;
         *)
             echo "Invalid encryption algorithm"
@@ -69,13 +79,21 @@ decrypt_app() {
     echo "Decrypting the application"
     echo -n "decrypt_time," >> run.log
     case $enc_algo in
-        "aes_128")
+        "aes_128_cbc")
             echo "Decrypting using AES 128"
             { time (openssl enc -aes-128-cbc -d -in output/app.enc -out build/zephyr/zephyr.dec -kfile utils/aes128.bin -iv $(xxd -p -c 32 iv.bin) 2>/dev/null); } 2>> run.log
             ;;
-        "aes_256")
+        "aes_256_cbc")
             echo "Decrypting using AES 256"
             { time (openssl enc -aes-256-cbc -d -in output/app.enc -out build/zephyr/zephyr.dec -kfile utils/aes256.bin -iv $(xxd -p -c 32 iv.bin) 2>/dev/null); } 2>> run.log
+            ;;
+        "aes_128_ctr")
+            echo "Decrypting using AES 128 CTR"
+            { time (openssl enc -aes-128-ctr -d -in output/app.enc -out build/zephyr/zephyr.dec -kfile utils/aes128.bin -iv $(xxd -p -c 32 iv.bin) 2>/dev/null); } 2>> run.log
+            ;;
+        "aes_256_ctr")
+            echo "Decrypting using AES 256 CTR"
+            { time (openssl enc -aes-256-ctr -d -in output/app.enc -out build/zephyr/zephyr.dec -kfile utils/aes256.bin -iv $(xxd -p -c 32 iv.bin) 2>/dev/null); } 2>> run.log
             ;;
         *)
             echo "Invalid encryption algorithm"
