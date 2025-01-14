@@ -15,11 +15,14 @@ encryptions = [
 ]
 
 compressions = [
-    "lzw",
-    "lzma2"
+    "lzw"
 ]
 
-command = "./run.sh b "
+authentications = [
+    "rsa_3k"
+]
+
+command = "bash ./run.sh b "
 
 with open('results.csv', 'w', newline='') as csvfile:
     csvwriter = csv.writer(csvfile)
@@ -28,13 +31,14 @@ with open('results.csv', 'w', newline='') as csvfile:
 
     for kern in kernels:
         for app in applications:
-            for enc in encryptions:
-                for cmp in compressions:
-                    os.system(command + kern + " " + app + " " + enc + " " + cmp)
+            for auth in authentications:
+                for enc in encryptions:
+                    for cmp in compressions:
+                        os.system(command + kern + " " + app + " " + enc + " " + cmp + " " + auth)
+                        # print(command + kern + " " + app + " " + enc + " " + cmp + " " + auth)
+                        # with open('run.log', 'r') as f:
+                        #     num1 = int(f.readline())
+                        #     num2 = int(f.readline())
+                        #     time = float(f.readline())
 
-                    with open('run.log', 'r') as f:
-                        num1 = int(f.readline())
-                        num2 = int(f.readline())
-                        time = float(f.readline())
-
-                    csvwriter.writerow([kern, app, "RSA", enc, cmp, num1, num2, time])
+                        # csvwriter.writerow([kern, app, auth, enc, cmp, num1, num2, time])
