@@ -6,26 +6,28 @@ kernels = [
 ]
 
 applications = [
-    "bloom_filter",
+    "bubble_sort",
 ]
 
 encryptions = [
-    # "aes_128_cbc",
-    # "aes_256_cbc",
+    "aes_128_cbc",
+    "aes_256_cbc",
     "aes_128_ctr",
     "aes_256_ctr",
 ]
 
 compressions = [
     "lzw",
-    # "lzma2"
+    "lzma2"
 ]
 
 authentications = [
     "rsa_3k",
-    # "rsa_4k",
-    # "ecdsa_192",
-    # "ecdsa_384"
+    "rsa_4k",
+    "ecdsa_192",
+    "ecdsa_384",
+    "dilithium",
+    "falcon"
 ]
 
 command = "bash ./run.sh b "
