@@ -1,9 +1,9 @@
 
 compress_app() {
     echo "Compressing the application"
-    echo -n "orig_size," > run.log && ls -l build/zephyr/zephyr.elf | cut -d " " -f5 >> run.log
+    
+    sed -i "1s/$/,$(ls -l build/zephyr/zephyr.elf | cut -d " " -f5)/" run.log
 
-    echo -n "comp_time," >> run.log
     case $compress_algo in
         "lzw")
             echo "Compressing using LZW"
@@ -25,15 +25,13 @@ compress_app() {
     esac
 
     duration=$(echo "$end - $start" | bc)
-    echo $duration >> run.log
+    sed -i "2s/$/,$duration/" run.log
 
-    echo -n "comp_size," >> run.log && ls -l build/zephyr/zephyr.comp | cut -d " " -f5 >> run.log
+    sed -i "3s/$/,$(ls -l build/zephyr/zephyr.comp | cut -d " " -f5)/" run.log
 }
 
 decompress_app() {
     echo "Decompressing the application"
-    
-    echo -n "decompress_time," >> run.log
 
     case $compress_algo in
         "lzw")
@@ -55,13 +53,13 @@ decompress_app() {
             ;;
     esac
     duration=$(echo "$end - $start" | bc)
-    echo $duration >> run.log
+    sed -i "8s/$/,$duration/" run.log
     
 }
 
 encrypt_app() {
     echo "Encrypting the application"
-    echo -n "encrypt_time," >> run.log
+    
     case $enc_algo in
         "aes_128_cbc")
             echo "Encrypting using AES 128"
@@ -96,12 +94,12 @@ encrypt_app() {
             ;;
     esac
     duration=$(echo "$end - $start" | bc)
-    echo $duration >> run.log
+    sed -i "4s/$/,$duration/" run.log
 }
 
 decrypt_app() {
     echo "Decrypting the application"
-    echo -n "decrypt_time," >> run.log
+
     case $enc_algo in
         "aes_128_cbc")
             echo "Decrypting using AES 128"
@@ -132,13 +130,12 @@ decrypt_app() {
             ;;
     esac
     duration=$(echo "$end - $start" | bc)
-    echo $duration >> run.log
+    sed -i "7s/$/,$duration/" run.log
     rm iv.bin
 }
 
 sign_app() {
     echo "Signing the application"
-    echo -n "sign_time," >> run.log
     case $auth_algo in
         "rsa_3k")
             echo "Signing using RSA 3k"
@@ -182,14 +179,14 @@ sign_app() {
     esac
 
     duration=$(echo "$end - $start" | bc)
-    echo $duration >> run.log
+    sed -i "5s/$/,$duration/" run.log
     # openssl dgst -sha256 -sign utils/private.pem -passin pass:dakshina -out output/app.sig output/app.enc
     # openssl base64 -in output/app.sig -out output/app.sig.b64
 }
 
 verify_app() {
     echo "Verifying the application"
-    echo -n "verify_time," >> run.log
+
     case $auth_algo in
         "rsa_3k")
             start=$(date +%s.%N)
@@ -227,7 +224,7 @@ verify_app() {
     esac
 
     duration=$(echo "$end - $start" | bc)
-    echo $duration >> run.log
+    sed -i "6s/$/,$duration/" run.log
 }
 
 kernel=$2
@@ -235,8 +232,6 @@ app=$3
 enc_algo=$4
 compress_algo=$5
 auth_algo=$6
-
-TIMEFORMAT='%3R'
 
 QSO=/home/dakshina/Projects/UFL/openssl/apps/openssl
 
@@ -249,13 +244,27 @@ else
         west build --pristine -b $kernel ../applications/$app -d ../build/
         cd ..
         
-        compress_app
-        encrypt_app
-        sign_app
+        rm run.log
+        printf "orig_size\n" >> run.log
+        printf "comp_time\n" >> run.log
+        printf "comp_size\n" >> run.log
+        printf "encrypt_time\n" >> run.log
+        printf "sign_time\n" >> run.log
+        printf "verify_time\n" >> run.log
+        printf "decrypt_time\n" >> run.log
+        printf "decompress_time\n" >> run.log
 
-        verify_app
-        decrypt_app
-        decompress_app
+
+        for ((i=0; i<20; i++))
+        do
+            compress_app
+            encrypt_app
+            sign_app
+
+            verify_app
+            decrypt_app
+            decompress_app
+        done
     elif [ "$1" = "r" ]; then
         echo "Running the application"
         cd zephyr

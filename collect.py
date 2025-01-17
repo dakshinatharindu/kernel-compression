@@ -3,10 +3,13 @@ import csv
 
 kernels = [
     "qemu_cortex_a9",
+    "qemu_cortex_r5"
 ]
 
 applications = [
+    "bloom_filter",
     "bubble_sort",
+    "mini_nn"
 ]
 
 encryptions = [
@@ -30,7 +33,7 @@ authentications = [
     "falcon"
 ]
 
-command = "bash ./run.sh b "
+command = "bash run.sh b "
 
 data_dict = {}
 
@@ -51,9 +54,13 @@ with open('results.csv', 'w', newline='') as csvfile:
 
                         with open('run.log', 'r') as f:
                             for line in f:
-                                s, value = line.strip().split(",")
-                                data_dict[s] = value
+                                parts = line.strip().split(",")
+                                label = parts[0]
 
-                        csvwriter.writerow([kern, app, auth, enc, cmp, data_dict["orig_size"], data_dict["comp_size"], \
-                                            data_dict["sign_time"], data_dict["encrypt_time"], data_dict["comp_time"], \
-                                                data_dict["verify_time"], data_dict["decrypt_time"], data_dict["decompress_time"]])
+                                values = [float(x) for x in parts[1:]]
+
+                                data_dict[label] = sum(values) / len(values)
+
+                        csvwriter.writerow([kern, app, auth, enc, cmp, int(data_dict["orig_size"]), int(data_dict["comp_size"]), \
+                                            round(1000*data_dict["sign_time"], 3), round(1000*data_dict["encrypt_time"], 3), round(1000*data_dict["comp_time"], 3), \
+                                                round(1000*data_dict["verify_time"], 3), round(1000*data_dict["decrypt_time"], 3), round(1000*data_dict["decompress_time"], 3)])
