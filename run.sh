@@ -36,14 +36,14 @@ decompress_app() {
     case $compress_algo in
         "lzw")
             echo "Decompressing using LZW"
-            mv build/zephyr/zephyr.dec build/zephyr/zephyr.elf.Z
+            mv build/zephyr/zephyr.comp build/zephyr/zephyr.elf.Z
             start=$(date +%s.%N)
             compress -d build/zephyr/zephyr.elf.Z
             end=$(date +%s.%N)
             ;;
         "lzma2")
             echo "Decompressing using LZMA2"
-            mv build/zephyr/zephyr.dec build/zephyr/zephyr.elf.xz
+            mv build/zephyr/zephyr.comp build/zephyr/zephyr.elf.xz
             start=$(date +%s.%N)
             unxz build/zephyr/zephyr.elf.xz
             end=$(date +%s.%N)
@@ -89,6 +89,12 @@ encrypt_app() {
             openssl enc -aes-256-ctr -in build/zephyr/zephyr.comp -out output/app.enc -kfile utils/aes256.bin -iv $(xxd -p -c 32 iv.bin)
             end=$(date +%s.%N)
             ;;
+        "chacha20")
+            echo "Encrypting using ChaCha20"
+            start=$(date +%s.%N)
+            ./chacha20 build/zephyr/zephyr.comp output/app.enc
+            end=$(date +%s.%N)
+            ;;
         *)
             echo "Invalid encryption algorithm"
             ;;
@@ -125,13 +131,19 @@ decrypt_app() {
             openssl enc -aes-256-ctr -d -in output/app.enc -out build/zephyr/zephyr.dec -kfile utils/aes256.bin -iv $(xxd -p -c 32 iv.bin)
             end=$(date +%s.%N)
             ;;
+        "chacha20")
+            echo "Decrypting using ChaCha20"
+            start=$(date +%s.%N)
+            ./chacha20 output/app.enc build/zephyr/zephyr.dec
+            end=$(date +%s.%N)
+            ;;
         *)
             echo "Invalid encryption algorithm"
             ;;
     esac
     duration=$(echo "$end - $start" | bc)
     sed -i "7s/$/,$duration/" run.log
-    rm iv.bin
+    # rm iv.bin
 }
 
 sign_app() {
@@ -241,7 +253,7 @@ else
     if [ "$1" = "b" ]; then
         echo "Building the application"
         cd zephyr
-        west build --pristine -b $kernel ../applications/$app -d ../build/
+        west build --pristine -b $kernel $app -d ../build/
         cd ..
         
         rm run.log
@@ -255,7 +267,7 @@ else
         printf "decompress_time\n" >> run.log
 
 
-        for ((i=0; i<20; i++))
+        for ((i=0; i<1; i++))
         do
             compress_app
             encrypt_app
