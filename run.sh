@@ -251,32 +251,37 @@ if [ -z "$1" ]; then
     echo "No argument supplied"
 else
     if [ "$1" = "b" ]; then
-        echo "Building the application"
-        cd zephyr
-        west build --pristine -b $kernel $app -d ../build/
-        cd ..
-        
-        rm run.log
-        printf "orig_size\n" >> run.log
-        printf "comp_time\n" >> run.log
-        printf "comp_size\n" >> run.log
-        printf "encrypt_time\n" >> run.log
-        printf "sign_time\n" >> run.log
-        printf "verify_time\n" >> run.log
-        printf "decrypt_time\n" >> run.log
-        printf "decompress_time\n" >> run.log
+        # echo "Building the application"
+        # cd zephyr
+        # west build --pristine -b $kernel $app -d ../build/
+        # cd ..
+
+        if [ -f build1/zephyr/zephyr.elf ]; then
+            cp -r build1 build
+            
+            rm run.log
+            printf "orig_size\n" >> run.log
+            printf "comp_time\n" >> run.log
+            printf "comp_size\n" >> run.log
+            printf "encrypt_time\n" >> run.log
+            printf "sign_time\n" >> run.log
+            printf "verify_time\n" >> run.log
+            printf "decrypt_time\n" >> run.log
+            printf "decompress_time\n" >> run.log
 
 
-        for ((i=0; i<1; i++))
-        do
-            compress_app
-            encrypt_app
-            sign_app
+            for ((i=0; i<20; i++))
+            do
+                compress_app
+                encrypt_app
+                sign_app
 
-            verify_app
-            decrypt_app
-            decompress_app
-        done
+                verify_app
+                decrypt_app
+                decompress_app
+            done
+            rm -rf build
+        fi
     elif [ "$1" = "r" ]; then
         echo "Running the application"
         cd zephyr
