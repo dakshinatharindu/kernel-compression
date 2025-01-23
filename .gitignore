@@ -5,3 +5,6 @@ build/
 output/
 *.pem
 *.log
+utils/aes128.bin
+utils/aes256.bin
+*.svg

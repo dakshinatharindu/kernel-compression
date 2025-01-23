@@ -4,19 +4,24 @@ import csv
 kernels = [
     "qemu_cortex_a9",
     # "qemu_cortex_r5",
-    # "mps2/an521/cpu0/ns"
+    # "qemu_cortex_m3",
+    # "qemu_cortex_a53",
+    # "mps2/an521/cpu0/ns",
+    # "qemu_riscv64",
+    # "qemu_riscv32",
+    # "qemu_xtensa"
 ]
 
 applications = [
     "../applications/bloom_filter",
-    # "../applications/mini_nn",
-    # "../applications/vector_3d",
+    "../applications/mini_nn",
+    "../applications/vector_3d",
     # "zephyr/samples/tfm_integration/tfm_ipc",
     # "zephyr/samples/tfm_integration/psa_crypto",
     # "zephyr/samples/tfm_integration/psa_secure_partition",
     # "zephyr/samples/net/telnet",
     # "zephyr/samples/net/mqtt_publisher",
-    # "zephyr/samples/net/wifi",
+    # "zephyr/samples/net/vlan",
 ]
 
 encryptions = [
@@ -24,7 +29,7 @@ encryptions = [
     "aes_256_cbc",
     "aes_128_ctr",
     "aes_256_ctr",
-    # "chacha20"
+    "chacha20"
 ]
 
 compressions = [
@@ -42,6 +47,7 @@ authentications = [
 ]
 
 command = "bash run.sh b "
+build_cmd = "bash build.sh b "
 
 data_dict = {}
 
@@ -71,6 +77,24 @@ enc_map = {
         "lzw": "c7",
         "lzma2": "c8"
     },
+    "chacha20": {
+        "lzw": "c9",
+        "lzma2": "c10"
+    }
+}
+
+security_score = {
+    "rsa_3k": 5.07,
+    "rsa_4k": 6.30,
+    "ecdsa_192": 5.8,
+    "ecdsa_384": 7.05,
+    "dilithium": 8.5,
+    "falcon": 8.5,
+    "aes_128_cbc": 7.6,
+    "aes_256_cbc": 8.35,
+    "aes_128_ctr": 7.95,
+    "aes_256_ctr": 8.70,
+    "chacha20": 8.65
 }
 
 def sec_strength(auth, enc, cmp):
@@ -78,12 +102,6 @@ def sec_strength(auth, enc, cmp):
 
 def app_name(app):
     return app.split("/")[-1]
-
-def sec_score(ss):
-    if ss == "r3-c1":
-        return 7
-    else:
-        return 8
 
 with open('results.csv', 'w', newline='') as csvfile:
     csvwriter = csv.writer(csvfile)
@@ -93,6 +111,7 @@ with open('results.csv', 'w', newline='') as csvfile:
 
     for kern in kernels:
         for app in applications:
+            os.system(build_cmd + kern + " " + app)
             for auth in authentications:
                 for enc in encryptions:
                     for cmp in compressions:
@@ -116,4 +135,4 @@ with open('results.csv', 'w', newline='') as csvfile:
 
                         csvwriter.writerow([kern, app_name(app), ss, int(data_dict["orig_size"]), int(data_dict["comp_size"]), \
                                             round(1000*data_dict["sign_time"], 3), round(1000*data_dict["encrypt_time"], 3), round(1000*data_dict["comp_time"], 3), \
-                                                round(1000*data_dict["verify_time"], 3), round(1000*data_dict["decrypt_time"], 3), round(1000*data_dict["decompress_time"], 3), sec_score(ss)])
+                                                round(1000*data_dict["verify_time"], 3), round(1000*data_dict["decrypt_time"], 3), round(1000*data_dict["decompress_time"], 3), (security_score[auth] + security_score[enc])/2])
